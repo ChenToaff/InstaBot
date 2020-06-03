@@ -3,7 +3,7 @@ from dataBase import Db
 from time import sleep, time
 from datetime import datetime, date
 from random import randrange, choice
-from pw import Password,Username
+from pw import Password,Username,Source
 
 
 def users_table(db, page_followers):
@@ -133,7 +133,7 @@ if __name__ == "__main__":
             SELECT user_name FROM users
             WHERE (ignore = 0) AND (following_me = 0) AND (requsted = 0) AND (date_of_follow = '');""")
     if(len(check) < 300):
-        page_followers = myBot.page_follow("pazam_gram",2)
+        page_followers = myBot.page_follow(Source,2)
         users_table(db,page_followers)
     
     #custom(myBot,db)
