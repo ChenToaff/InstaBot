@@ -16,12 +16,11 @@ def users_table(db, page_followers):
     liked BIT
     ignore BIT
     );""")
-
-    query = "INSERT OR IGNORE INTO users (user_name, requsted, date_of_follow, liked) VALUES"
+    
+    query = "INSERT OR IGNORE INTO users (user_name,following_me,date_of_follow,requsted, liked,ignore) VALUES"
     for user in page_followers:
-        query += ' ("'+user+'",0,0,"",0),'
+        query += ' ("'+user+'",0,"",0,0,0),'
     db.query(query[:-1])
-
 
 def update_following(myBot, db):
     #if requsted = 1 and not following: date_of_follow = ""
@@ -35,6 +34,8 @@ def update_following(myBot, db):
 
 
 def update_unfollowing(myBot, db):
+    #maybe add ignore so it wont fail
+    #add if to check users
     users = myBot.page_follow(myBot.username, 2)
     db.query(f"""UPDATE users SET following_me = 0;""")
     for user in users:
@@ -44,8 +45,8 @@ def update_unfollowing(myBot, db):
 
 
 def main_loop(myBot, db):
-    update_following(myBot, db)
-    update_unfollowing(myBot, db)
+    #update_following(myBot, db)
+    #update_unfollowing(myBot, db)
     # botTime:
     allowedTime = 60 * 6
     startTime = time()
@@ -53,7 +54,9 @@ def main_loop(myBot, db):
     timeCounter = time()
     timeLimit = randrange(50, 65)
     FOLLOW, LIKE, SCROLL, UNFOLLOW = 0, 1, 2, 3
-    actions = [0, 1, 2, 3]
+    actions =  [FOLLOW, LIKE, SCROLL, UNFOLLOW]
+    #actions =  [UNFOLLOW]
+
 
     while (((time() - startTime)/60) < allowedTime):
         if((time() - timeCounter)/60 >= timeLimit):
@@ -62,17 +65,15 @@ def main_loop(myBot, db):
             print("finished sleeping: " + datetime.now().strftime("%H:%M"))
             timeLimit = randrange(50, 65)
             timeCounter = time()
-            actions = [0, 1, 2, 3]
-            update_following(myBot, db)
-            update_unfollowing(myBot, db)
-
+            actions = [FOLLOW, LIKE, SCROLL, UNFOLLOW]
+        
         currentAction = choice(actions)
-        # currentAction = 0
+        #currentAction = 3
         if(currentAction == FOLLOW):
             user = db.read_query("""
             SELECT user_name
             FROM users
-            WHERE (date_of_follow = "") AND (requsted = 0) AND (ignore = 0);
+            WHERE (date_of_follow = "") AND (requsted = 0) AND (ignore = 0)  LIMIT 1;
             """)
             if(len(user) > 0):
                 user = user[0][0]
@@ -90,7 +91,7 @@ def main_loop(myBot, db):
             user = db.read_query("""
             SELECT user_name
             FROM users
-            WHERE (date_of_follow != "") AND (liked = 0) AND (requsted = 0) AND (ignore = 0);
+            WHERE (date_of_follow != "") AND (liked = 0) AND (requsted = 0) AND (ignore = 0)  LIMIT 1;
             """)
             if(len(user) > 0):
                 user = user[0][0]
@@ -101,37 +102,39 @@ def main_loop(myBot, db):
                     db.query(
                         f"""UPDATE users SET liked = 1 WHERE (user_name = '{user}');""")
         elif(currentAction == UNFOLLOW):
-            user = db.read_query("""
-            SELECT user_name
-            FROM users
-            WHERE ((julianday('now') - julianday(date_of_follow)) >= 3) AND (ignore = 0) AND (following_me = 0) AND(requsted = 0);
-            """)
-            if(len(user) > 0):
-                user = user[0][0]
-                answer = myBot.un_follow(user)
-                if(myBot.banner_on()):
-                    actions.remove(UNFOLLOW)
-                else:
-                    db.query(
-                        f"""UPDATE users SET ignore = 1, following_me = 0, requsted = 0 , date_of_follow = "" WHERE (user_name = '{user}');""")
-
+            for i in [0,1]:
+                user = db.read_query(f"""
+                SELECT user_name
+                FROM users
+                WHERE ((julianday('now') - julianday(date_of_follow)) >= 1) AND (ignore = {i}) AND (following_me = 0) AND(requsted = 0)  LIMIT 1;
+                """)
+                if(len(user) > 0):
+                    user = user[0][0]
+                    answer = myBot.un_follow(user)
+                    if(myBot.banner_on()):
+                        actions.remove(UNFOLLOW)
+                    else:
+                        db.query(
+                            f"""UPDATE users SET ignore = {i+1}, following_me = 0, requsted = 0 , date_of_follow = "" WHERE (user_name = '{user}');""")
+                    break
         elif currentAction == SCROLL:
             myBot.scroll()
 
     db.close()
 
-
-def custom(db):
-    print(db.read_query("""
-            SELECT user_name
-            FROM users
-            WHERE ((julianday('now') - julianday(date_of_follow)) >= 1) AND (ignore = 0);
-            """))
-
+def custom(myBot,db):
+    myBot.like("arbelefrati")
 
 if __name__ == "__main__":
     
     myBot = InstaBot(Username,Password )
     db = Db(f"./{Username}.db")
+    check = db.read_query("""
+            SELECT user_name FROM users
+            WHERE (ignore = 0) AND (following_me = 0) AND (requsted = 0) AND (date_of_follow = '');""")
+    if(len(check) < 300):
+        page_followers = myBot.page_follow("pazam_gram",2)
+        users_table(db,page_followers)
+    
+    #custom(myBot,db)
     main_loop(myBot, db)
-    # custom(db)
