@@ -94,17 +94,15 @@ class InstaBot:
                 if("/p/" in i.get_attribute("href")):
                     posts.append(i)
             if(len(posts) > 0):
-                sleep_rand(1)
+                sleep_rand_range(3, 5)
                 if(len(posts) > 2):
                     posts[choice(range(0, 3))].click()  # image
                 else:
                     posts[0].click()  # image
-                sleep_rand(5)
-                self.driver.find_element_by_xpath(
-                    "/html/body/div[4]/div[2]/div/article/div[2]/section[1]/span[1]/button").click()  # likeBtn
-                sleep_rand(3)
-                self.driver.find_element_by_xpath(
-                    "/html/body/div[4]/div[3]/button").click()  # closeBtn
+                sleep_rand_range(3, 5)
+                self.driver.find_element_by_xpath("//*[name()='svg'][@aria-label='Like']/..").click()  # likeBtn
+                sleep_rand_range(1, 3)
+                self.driver.find_element_by_xpath("//*[name()='svg'][@aria-label='Close']/..").click()  # closeBtn
         except Exception as e:
             print("account: " + account)
             print(e)
@@ -131,14 +129,11 @@ class InstaBot:
     def un_follow(self, account):
         self.driver.get(self.url + account)
         try:
-            sleep_rand(2)
+            sleep_rand_range(1, 3)
+            self.driver.find_element_by_xpath("//span[@aria-label='Following']/../..").click()
+            sleep_rand_range(1, 3)
             self.driver.find_element_by_xpath(
-                "/html/body/div[1]/section/main/div/header/section/div[1]/div[2]/span/span[1]/button").click()
-            bt = self.driver.find_elements_by_xpath(
-                "//button[contains(text(),'Unfollow')]")
-            if len(bt) > 0:
-                sleep_rand(2)
-                bt[0].click()
+                "//button[contains(text(),'Unfollow')]").click()
             return 1
         except Exception as e:
             print(e)
