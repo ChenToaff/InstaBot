@@ -1,9 +1,9 @@
-from insta_bot import InstaBot
-from dataBase import Db
+from .insta_bot import InstaBot
+from .dataBase import Db
 from time import sleep, time
 from datetime import datetime, date
 from random import randrange, choice
-from pw import Password,Username,Source
+from .settings import Password,Username,Source,Hours
 
 
 def users_table(db, page_followers):
@@ -48,7 +48,7 @@ def main_loop(myBot, db):
     #update_following(myBot, db)
     #update_unfollowing(myBot, db)
     # botTime:
-    allowedTime = 60 * 6
+    allowedTime = 60 * Hours
     startTime = time()
     # actions time:
     timeCounter = time()
@@ -122,13 +122,9 @@ def main_loop(myBot, db):
 
     db.close()
 
-def custom(myBot,db):
-    myBot.like("arbelefrati")
-
 if __name__ == "__main__":
-    
-    myBot = InstaBot(Username,Password )
-    db = Db(f"./{Username}.db")
+    myBot = InstaBot(Username, Password)
+    db = Db(f"./{Username}/users.db")
     check = db.read_query("""
             SELECT user_name FROM users
             WHERE (ignore = 0) AND (following_me = 0) AND (requsted = 0) AND (date_of_follow = '');""")
@@ -136,5 +132,4 @@ if __name__ == "__main__":
         page_followers = myBot.page_follow(Source,2)
         users_table(db,page_followers)
     
-    #custom(myBot,db)
     main_loop(myBot, db)
