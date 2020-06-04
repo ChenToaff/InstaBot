@@ -2,7 +2,7 @@
 
 InstaBot project is an automation for increasing followers.
 
-InstaBot can:
+## InstaBot can:
 
 - Like.
 - Follow.
