@@ -15,11 +15,11 @@ def sleep_rand_range(low, high):
 
 class InstaBot:
     def __init__(self, username, pw):
-        LOGIN = not os.path.isdir(f'./{username}')
+        LOGIN = not os.path.isdir(f'./data/{username}')
         options = webdriver.ChromeOptions()
         options.add_argument('--ignore-certificate-errors')
         options.add_argument('--allow-insecure-localhost')
-        options.add_argument(f"user-data-dir=./{username}")
+        options.add_argument(f"user-data-dir=./data/{username}")
         self.driver = webdriver.Chrome(
             "C:/webdrivers/chromedriver.exe", options=options)
 

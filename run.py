@@ -124,7 +124,7 @@ def main_loop(myBot, db):
 
 if __name__ == "__main__":
     myBot = InstaBot(Username, Password)
-    db = Db(f"./{Username}/users.db")
+    db = Db(f"./data/{Username}/users.db")
     check = db.read_query("""
             SELECT user_name FROM users
             WHERE (ignore = 0) AND (following_me = 0) AND (requsted = 0) AND (date_of_follow = '');""")
