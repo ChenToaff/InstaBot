@@ -1,13 +1,14 @@
 # InstaBot
 
 InstaBot project is an automation for increasing followers.
-InstaBot:
 
-- Likes.
-- Follows.
-- Unfollows.
-- Scrolls "home" and "explore".
-- Increases databse based on an account you want his followers.
+InstaBot can:
+
+- Like.
+- Follow.
+- Unfollow.
+- Scroll "home" and "explore".
+- Increase his databse based on another account's followers.
 
 randomly so it won't get detected and blocked.
 
