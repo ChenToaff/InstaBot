@@ -33,7 +33,7 @@ Source='type Source here'
 Hours = 6
 ```
 
-## Usage
+## Usage:
 
 ```python
 python run.py
