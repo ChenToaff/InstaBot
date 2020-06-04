@@ -20,7 +20,7 @@ pip install -r requirements.txt
 also, download <a href="https://chromedriver.chromium.org/downloads">chromedriver</a> and extract it to:
 "C:/webdrivers/chromedriver.exe"
 
-### Change setting in [`settings.py`](settings.py):
+### Change settings in [`settings.py`](settings.py):
 
 ```python
 # Username
