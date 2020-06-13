@@ -4,7 +4,6 @@ from time import sleep
 from random import random, randrange, choice
 import os
 
-
 def sleep_rand(num):
     sleep((random() * 10) % num)
 
@@ -44,8 +43,7 @@ class InstaBot:
     def scroll_box(self):
         sleep(3)
         scrollBox = self.driver.find_element_by_xpath(
-            "//div[@role='dialog']/div[2]")
-
+            "//div[@role='dialog']//ul/..")   
         last_ht, ht = 0, 1
         while last_ht != ht:
             last_ht = ht
@@ -56,12 +54,12 @@ class InstaBot:
                 """, scrollBox)
         return scrollBox
 
-    def page_follow(self, account, action):
+    def page_data(self, account, action):
         """self, account, action (2 = followers, 3 = following)"""
         self.driver.get(self.url + account)
         sleep(2)
         self.driver.find_element_by_xpath(
-            f"/html/body/div[1]/section/main/div/header/section/ul/li[{str(action)}]/a").click()
+            f"//ul[not(ancestor::nav)]/li[{str(action)}]/a").click()
         scrollBox = self.scroll_box()
         links = scrollBox.find_elements_by_tag_name('a')
         names = [name.text for name in links if name.text != '']
@@ -69,75 +67,50 @@ class InstaBot:
         self.driver.find_element_by_xpath(
             "//div[@role='dialog']/div[1]//button[1]").click()
         return names
+    
+    def click_xpath(self,path):
+        sleep_rand_range(3, 5)
+        btn = self.driver.find_elements_by_xpath(path)
+        if len(btn) > 0:
+            btn[0].click()
+
+        return btn
+
 
     def follow(self, account):
-        FOLLOWING, ERROR = 0, 404
         self.driver.get(self.url + account)
-        try:
-            mainDiv = self.driver.find_element_by_xpath(
-                "/html/body/div[1]/section/main/div/header/section/div[1]")
-            followBt = mainDiv.find_elements_by_xpath(
-                "//button[contains(text(),'Follow')]")
-            if len(followBt) > 0:
-                followBt[0].click()
-        except Exception as e:
-            print(e)
-            return ERROR
-        return FOLLOWING
+        return self.click_xpath("//button[contains(text(),'Follow')]")
+
 
     def like(self, account):
         self.driver.get(self.url + account)
-        try:
-            result = self.driver.find_elements_by_xpath("//a")
-            posts = []
-            for i in result:
-                if("/p/" in i.get_attribute("href")):
-                    posts.append(i)
-            if(len(posts) > 0):
-                sleep_rand_range(3, 5)
-                if(len(posts) > 2):
-                    posts[choice(range(0, 3))].click()  # image
-                else:
-                    posts[0].click()  # image
-                sleep_rand_range(3, 5)
-                self.driver.find_element_by_xpath("//*[name()='svg'][@aria-label='Like']/..").click()  # likeBtn
-                sleep_rand_range(1, 3)
-                self.driver.find_element_by_xpath("//*[name()='svg'][@aria-label='Close']/..").click()  # closeBtn
-        except Exception as e:
-            print("account: " + account)
-            print(e)
-            return 0
-        return 1
+        posts = self.driver.find_elements_by_xpath("//a[starts-with(@href, '/p/')]")
+        if(len(posts) > 0):
+            sleep_rand_range(3, 5)
+            if(len(posts) > 2):
+                posts[choice(range(0, 3))].click()  # image
+            else:
+                posts[0].click()  # image
+            
+            lBtn = self.click_xpath("//*[name()='svg'][@aria-label='Like']/..")  # likeBtn
+            cBtn = self.click_xpath("//*[name()='svg'][@aria-label='Close']/..") # closeBtn
+            if not (lBtn and cBtn):
+                print("failed liking: " + account)
+           
 
     def banner_on(self):
-        sleep(3)
-        on = False
-        try:
-            opt = ["OK", "Report a Problem"]
-            btn = self.driver.find_element_by_xpath(
-                f"//button[contains(text(),'{opt[choice([0, 1])]}')]")
-            sleep_rand(1)
-            btn.click()
-            on = True
-        except Exception as e:
-
-            pass
-        if(on):
+        opt = ["OK", "Report a Problem"]
+        isOn = self.click_xpath(f"//button[contains(text(),'{opt[choice([0, 1])]}')]")
+        if isOn:
             print(f"banner on")
-        return on
+        return isOn
 
     def un_follow(self, account):
         self.driver.get(self.url + account)
-        try:
-            sleep_rand_range(1, 3)
-            self.driver.find_element_by_xpath("//span[@aria-label='Following']/../..").click()
-            sleep_rand_range(1, 3)
-            self.driver.find_element_by_xpath(
-                "//button[contains(text(),'Unfollow')]").click()
-            return 1
-        except Exception as e:
-            print(e)
-            return 404
+        if self.click_xpath("//span[@aria-label='Following']/../.."):
+            if self.click_xpath("//button[contains(text(),'Unfollow')]"):
+                return
+        print("failed unfollowing: "+ account)
 
     def scroll(self):
         if(choice([1, 2]) == 1):
