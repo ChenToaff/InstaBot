@@ -12,11 +12,9 @@ class Db:
         self.cursor = self.connection.cursor()
 
     def query(self, query):
-        try:
-            self.cursor.execute(query)
-            self.connection.commit()
-        except Error as e:
-            print(f"The error '{e}' occurred")
+        self.cursor.execute(query)
+        self.connection.commit()
+        
 
     def read_query(self, query):
         try:
