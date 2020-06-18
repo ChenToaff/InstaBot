@@ -4,6 +4,7 @@ from time import sleep
 from random import random, randrange, choice
 import os
 
+
 def sleep_rand(num):
     sleep((random() * 10) % num)
 
@@ -29,6 +30,7 @@ class InstaBot:
         if(LOGIN):
             sleep(2)
             self.login()
+        self.dismiss_notNow()
 
     def login(self):
         self.driver.find_element_by_xpath(
@@ -36,14 +38,11 @@ class InstaBot:
         self.driver.find_element_by_xpath(
             "//input[@name=\"password\"]").send_keys(self.pw)
         self.driver.find_element_by_xpath('//button[@type="submit"]').click()
-        sleep(4)
-        self.driver.find_element_by_xpath(
-            "//button[contains(text(),'Not Now')]").click()
 
     def scroll_box(self):
         sleep(3)
         scrollBox = self.driver.find_element_by_xpath(
-            "//div[@role='dialog']//ul/..")   
+            "//div[@role='dialog']//ul/..")
         last_ht, ht = 0, 1
         while last_ht != ht:
             last_ht = ht
@@ -53,6 +52,9 @@ class InstaBot:
                 return arguments[0].scrollHeight;
                 """, scrollBox)
         return scrollBox
+
+    def dismiss_notNow(self):
+        self.click_xpath("//button[contains(text(),'Not Now')]")
 
     def page_data(self, account, action):
         """self, account, action (2 = followers, 3 = following)"""
@@ -67,8 +69,8 @@ class InstaBot:
         self.driver.find_element_by_xpath(
             "//div[@role='dialog']/div[1]//button[1]").click()
         return names
-    
-    def click_xpath(self,path):
+
+    def click_xpath(self, path):
         sleep_rand_range(3, 5)
         btn = self.driver.find_elements_by_xpath(path)
         if len(btn) > 0:
@@ -76,31 +78,32 @@ class InstaBot:
 
         return btn
 
-
     def follow(self, account):
         self.driver.get(self.url + account)
         return self.click_xpath("//button[contains(text(),'Follow')]")
 
-
     def like(self, account):
         self.driver.get(self.url + account)
-        posts = self.driver.find_elements_by_xpath("//a[starts-with(@href, '/p/')]")
+        posts = self.driver.find_elements_by_xpath(
+            "//a[starts-with(@href, '/p/')]")
         if(len(posts) > 0):
             sleep_rand_range(3, 5)
             if(len(posts) > 2):
                 posts[choice(range(0, 3))].click()  # image
             else:
                 posts[0].click()  # image
-            
-            lBtn = self.click_xpath("//*[name()='svg'][@aria-label='Like']/..")  # likeBtn
-            cBtn = self.click_xpath("//*[name()='svg'][@aria-label='Close']/..") # closeBtn
+
+            lBtn = self.click_xpath(
+                "//*[name()='svg'][@aria-label='Like']/..")  # likeBtn
+            cBtn = self.click_xpath(
+                "//*[name()='svg'][@aria-label='Close']/..")  # closeBtn
             if not (lBtn and cBtn):
                 print("failed liking: " + account)
-           
 
     def banner_on(self):
         opt = ["OK", "Report a Problem"]
-        isOn = self.click_xpath(f"//button[contains(text(),'{opt[choice([0, 1])]}')]")
+        isOn = self.click_xpath(
+            f"//button[contains(text(),'{opt[choice([0, 1])]}')]")
         if isOn:
             print(f"banner on")
         return isOn
@@ -110,7 +113,7 @@ class InstaBot:
         if self.click_xpath("//span[@aria-label='Following']/../.."):
             if self.click_xpath("//button[contains(text(),'Unfollow')]"):
                 return
-        print("failed unfollowing: "+ account)
+        print("failed unfollowing: " + account)
 
     def scroll(self):
         if(choice([1, 2]) == 1):

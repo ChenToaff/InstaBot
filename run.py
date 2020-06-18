@@ -1,9 +1,9 @@
-from .insta_bot import InstaBot
-from .dataBase import Db
+from Bot.insta_bot import InstaBot
+from Bot.dataBase import Db
 from time import sleep, time
 from datetime import datetime, date
 from random import randrange, choice
-from .settings import Password,Username,Source,Hours
+from settings import Password, Username, Source, Hours
 
 
 def users_table(db, page_followers):
@@ -16,11 +16,12 @@ def users_table(db, page_followers):
     liked BIT
     ignore BIT
     );""")
-    
+
     query = "INSERT OR IGNORE INTO users (user_name,following_me,date_of_follow,requsted, liked,ignore) VALUES"
     for user in page_followers:
         query += ' ("'+user+'",0,"",0,0,0),'
     db.query(query[:-1])
+
 
 def update_following(myBot, db):
     users = myBot.page_data(myBot.username, 3)
@@ -33,7 +34,7 @@ def update_following(myBot, db):
 def update_followers(myBot, db):
     users = myBot.page_data(myBot.username, 2)
     num = int(myBot.driver.find_element_by_xpath(
-            f"//ul[not(ancestor::nav)]/li[2]/a/span").text)
+        f"//ul[not(ancestor::nav)]/li[2]/a/span").text)
     if len(users) < num:
         raise Exception('followers error')
 
@@ -54,7 +55,7 @@ def main_loop(myBot, db):
     timeCounter = time()
     timeLimit = randrange(50, 65)
     FOLLOW, LIKE, SCROLL, UNFOLLOW = 0, 1, 2, 3
-    actions =  [FOLLOW, LIKE, SCROLL, UNFOLLOW]
+    actions = [FOLLOW, LIKE, SCROLL, UNFOLLOW]
     #actions =  [LIKE, SCROLL,UNFOLLOW]
 
     while (((time() - startTime)/60) < allowedTime):
@@ -66,7 +67,7 @@ def main_loop(myBot, db):
             timeCounter = time()
             actions = [FOLLOW, LIKE, SCROLL, UNFOLLOW]
             #actions =  [LIKE, SCROLL,UNFOLLOW]
-        
+
         currentAction = choice(actions)
         #currentAction = 3
         if(currentAction == FOLLOW):
@@ -102,7 +103,7 @@ def main_loop(myBot, db):
                     db.query(
                         f"""UPDATE users SET liked = 1 WHERE (user_name = '{user}');""")
         elif(currentAction == UNFOLLOW):
-            for i in [0,1]:
+            for i in [0, 1]:
                 user = db.read_query(f"""
                 SELECT user_name FROM users
                 WHERE ((julianday('now') - julianday(date_of_follow)) >= 3) AND (ignore = {i}) AND (following_me = 0) LIMIT 1;
@@ -120,6 +121,8 @@ def main_loop(myBot, db):
             myBot.scroll()
 
     db.close()
+
+
 if __name__ == "__main__":
     myBot = InstaBot(Username, Password)
     db = Db(f"./data/{Username}/users.db")
@@ -127,7 +130,7 @@ if __name__ == "__main__":
             SELECT user_name FROM users
             WHERE (ignore = 0) AND (following_me = 0) AND (requsted = 0) AND (date_of_follow = '');""")
     if(len(check) < 300):
-        page_followers = myBot.page_data(Source,2)
-        users_table(db,page_followers)
-    
+        page_followers = myBot.page_data(Source, 2)
+        users_table(db, page_followers)
+
     main_loop(myBot, db)
