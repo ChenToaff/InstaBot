@@ -3,6 +3,7 @@ import selenium
 from time import sleep
 from random import random, randrange, choice
 import os
+import pathlib
 
 
 def sleep_rand(num):
@@ -19,7 +20,9 @@ class InstaBot:
         options = webdriver.ChromeOptions()
         options.add_argument('--ignore-certificate-errors')
         options.add_argument('--allow-insecure-localhost')
-        options.add_argument(f"user-data-dir=./data/{username}")
+        scriptDirectory = pathlib.Path().absolute()
+        options.add_argument(f"user-data-dir={scriptDirectory}/data/{username}")
+        #options.add_argument(f"user-data-dir=./data/{username}")
         self.driver = webdriver.Chrome(
             "C:/webdrivers/chromedriver.exe", options=options)
 
@@ -73,9 +76,11 @@ class InstaBot:
     def click_xpath(self, path):
         sleep_rand_range(3, 5)
         btn = self.driver.find_elements_by_xpath(path)
-        if len(btn) > 0:
-            btn[0].click()
-
+        try:
+            if len(btn) > 0:
+                btn[0].click()
+        except:
+            btn = None
         return btn
 
     def follow(self, account):
