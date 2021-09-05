@@ -119,7 +119,7 @@ def main_loop(myBot, db):
         if(len(user) > 0):
             user = user[0][0]
             q = functions[currentAction](myBot,user)
-            if(not myBot.banner_on()):
+            if(myBot.banner_on()):
                  actions.remove(currentAction)
             else:
                 db.query(q)
